@@ -48,5 +48,5 @@ stages:
             displayName: Install dependencies
 
           - script: |
-              pytest -v
+              pytest -v tests/calculator.py
             displayName: Run unit tests
