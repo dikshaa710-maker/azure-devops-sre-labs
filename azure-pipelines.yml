@@ -14,7 +14,7 @@ stages:
       - job: BuildJob
         displayName: Build Application
         steps:
-          - checkout: nonexisting-repository
+          - checkout: self
 
           - task: UsePythonVersion@0
             inputs:
