@@ -1,39 +1,52 @@
-trigger:- main
+trigger:
+  - main
+
 pool:
   vmImage: ubuntu-latest
+
 variables:
   pythonVersion: '3.12'
-stages:- stage: Build
-  displayName: Build
-  jobs:
-  - job: BuildJob
-    displayName: Build Application
-    steps:
-    - checkout: self
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
-    - script: |
-        python --version
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      displayName: Install dependencies
-    - script: |
-        python -m compileall app
-      displayName: Compile application- stage: Test
-  displayName: Test
-  dependsOn: Build
-  jobs:
-  - job: TestJob
-    displayName: Run Tests
-    steps:
-    - checkout: self
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
-    - script: |
-        pip install -r requirements.txt
-      displayName: Install dependencies
-    - script: |
-        pytest -v
-      displayName: Run unit tests
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: BuildJob
+        displayName: Build Application
+        steps:
+          - checkout: self
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+
+          - script: |
+              python --version
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: Install dependencies
+
+          - script: |
+              python -m compileall app
+            displayName: Compile application
+
+  - stage: Test
+    displayName: Test
+    dependsOn: Build
+    jobs:
+      - job: TestJob
+        displayName: Run Tests
+        steps:
+          - checkout: self
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+
+          - script: |
+              pip install -r requirements.txt
+            displayName: Install dependencies
+
+          - script: |
+              pytest -v
+            displayName: Run unit tests
