@@ -44,9 +44,25 @@ stages:
               versionSpec: '$(pythonVersion)'
 
           - script: |
+              python --version
+              python -m pip install --upgrade pip
               pip install -r requirements.txt
             displayName: Install dependencies
 
           - script: |
+              export PYTHONPATH="$(System.DefaultWorkingDirectory)"
+              echo "PYTHONPATH=$PYTHONPATH"
+
+              echo "Repository contents:"
+              ls -la
+              echo "App contents:"
+              ls -la app
+              echo "Tests contents:"
+              ls -la tests
+
+              echo "Testing app import:"
+              python -c "import app; print('app imported successfully')"
+
+              echo "Running unit tests:"
               pytest -v tests/calculator.py
             displayName: Run unit tests
