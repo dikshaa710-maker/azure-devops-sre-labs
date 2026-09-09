@@ -46,8 +46,12 @@ stages:
           - script: |
               python --version
               python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            displayName: Install dependencies
+
+              echo "Testing access to private Azure Artifacts feed..."
+
+              pip install pytest \
+                --index-url "https://LAB_USER:INVALID_PASSWORD@YOUR_FEED_URL/simple/"
+            displayName: Test pip authentication
 
           - script: |
               export PYTHONPATH="$(System.DefaultWorkingDirectory)"
@@ -55,8 +59,10 @@ stages:
 
               echo "Repository contents:"
               ls -la
+
               echo "App contents:"
               ls -la app
+
               echo "Tests contents:"
               ls -la tests
 
