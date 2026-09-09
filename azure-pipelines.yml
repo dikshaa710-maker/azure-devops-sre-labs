@@ -56,7 +56,7 @@ stages:
               echo "Testing access to private Azure Artifacts feed..."
 
               timeout 30 pip install pytest \
-                --index-url "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/"
+                --index-url "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/" \
                 --disable-pip-version-check \
                 --no-input \
                 -v
