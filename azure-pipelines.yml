@@ -44,6 +44,12 @@ stages:
               versionSpec: '$(pythonVersion)'
 
           - script: |
+              echo "Testing Azure Artifacts feed..."
+
+              curl -I "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/"
+            displayName: Test feed connectivity
+
+          - script: |
               python --version
               python -m pip install --upgrade pip
 
