@@ -50,7 +50,7 @@ stages:
               echo "Testing access to private Azure Artifacts feed..."
 
               pip install pytest \
-                --index-url "https://LAB_USER:INVALID_PASSWORD@YOUR_FEED_URL/simple/"
+                --index-url "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/"
             displayName: Test pip authentication
 
           - script: |
