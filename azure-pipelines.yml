@@ -5,7 +5,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  pythonVersion: '999.99.99'
+  pythonVersion: '3.12'
 
 stages:
   - stage: Build
