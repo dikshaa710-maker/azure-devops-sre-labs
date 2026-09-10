@@ -20,7 +20,6 @@ stages:
         displayName: Build Application
 
         steps:
-
           - checkout: self
 
           - task: UsePythonVersion@0
@@ -52,7 +51,6 @@ stages:
             artifact: application
             displayName: Publish application artifact
 
-
   # =========================
   # TEST
   # =========================
@@ -65,7 +63,6 @@ stages:
         displayName: Run Tests
 
         steps:
-
           - checkout: self
 
           - task: UsePythonVersion@0
@@ -98,7 +95,6 @@ stages:
               pytest -v tests/calculator.py
             displayName: Run unit tests
 
-
   # =========================
   # DEPLOY
   # =========================
@@ -111,7 +107,6 @@ stages:
         displayName: Deploy Application
 
         steps:
-
           # Download artifact produced by Build
           - download: current
             artifact: application
