@@ -8,12 +8,19 @@ variables:
   pythonVersion: '3.12'
 
 stages:
+
+  # =========================
+  # BUILD
+  # =========================
   - stage: Build
     displayName: Build
+
     jobs:
       - job: BuildJob
         displayName: Build Application
+
         steps:
+
           - checkout: self
 
           - task: UsePythonVersion@0
@@ -30,13 +37,35 @@ stages:
               python -m compileall app
             displayName: Compile application
 
+          # Create artifact
+          - script: |
+              mkdir -p artifact
+              echo "Hello from build $(Build.BuildNumber)" > artifact/version.txt
+
+              echo "Created artifact:"
+              ls -la artifact
+              cat artifact/version.txt
+            displayName: Create artifact
+
+          # Publish artifact
+          - publish: artifact
+            artifact: application
+            displayName: Publish application artifact
+
+
+  # =========================
+  # TEST
+  # =========================
   - stage: Test
     displayName: Test
     dependsOn: Build
+
     jobs:
       - job: TestJob
         displayName: Run Tests
+
         steps:
+
           - checkout: self
 
           - task: UsePythonVersion@0
@@ -44,25 +73,10 @@ stages:
               versionSpec: '$(pythonVersion)'
 
           - script: |
-              echo "Testing Azure Artifacts feed..."
-
-              curl -I "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/"
-            displayName: Test feed connectivity
-
-          - script: |
               python --version
               python -m pip install --upgrade pip
-
-              echo "Testing access to private Azure Artifacts feed..."
-
-              timeout 30 pip install pytest \
-                --index-url "https://pkgs.dev.azure.com/DikshaArora0014/Internal_Learning/_packaging/pip-auth-lab/pypi/simple/" \
-                --disable-pip-version-check \
-                --no-input \
-                -v
-
-                
-            displayName: Test pip authentication
+              pip install -r requirements.txt
+            displayName: Install test dependencies
 
           - script: |
               export PYTHONPATH="$(System.DefaultWorkingDirectory)"
@@ -83,3 +97,29 @@ stages:
               echo "Running unit tests:"
               pytest -v tests/calculator.py
             displayName: Run unit tests
+
+
+  # =========================
+  # DEPLOY
+  # =========================
+  - stage: Deploy
+    displayName: Deploy
+    dependsOn: Test
+
+    jobs:
+      - job: DeployJob
+        displayName: Deploy Application
+
+        steps:
+
+          # Download artifact produced by Build
+          - download: current
+            artifact: application
+
+          - script: |
+              echo "Downloaded artifact:"
+              ls -la "$(Pipeline.Workspace)/application"
+
+              echo "Artifact contents:"
+              cat "$(Pipeline.Workspace)/application/version.txt"
+            displayName: Read artifact
