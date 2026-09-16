@@ -79,15 +79,6 @@ stages:
               export PYTHONPATH="$(System.DefaultWorkingDirectory)"
               echo "PYTHONPATH=$PYTHONPATH"
 
-              echo "Repository contents:"
-              ls -la
-
-              echo "App contents:"
-              ls -la app
-
-              echo "Tests contents:"
-              ls -la tests
-
               echo "Testing app import:"
               python -c "import app; print('app imported successfully')"
 
