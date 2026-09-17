@@ -1,5 +1,119 @@
+# trigger:
+#   - main
+
+# pool:
+#   vmImage: ubuntu-latest
+
+# variables:
+#   pythonVersion: '3.12'
+
+# stages:
+
+#   # =========================
+#   # BUILD
+#   # =========================
+#   - stage: Build
+#     displayName: Build
+
+#     jobs:
+#       - job: BuildJob
+#         displayName: Build Application
+
+#         steps:
+#           - checkout: self
+
+#           - task: UsePythonVersion@0
+#             inputs:
+#               versionSpec: '$(pythonVersion)'
+
+#           - script: |
+#               python --version
+#               python -m pip install --upgrade pip
+#               pip install -r requirements.txt
+#             displayName: Install dependencies
+
+#           - script: |
+#               python -m compileall app
+#             displayName: Compile application
+
+#           # Create artifact
+#           - script: |
+#               mkdir -p artifact
+#               echo "Hello from build $(Build.BuildNumber)" > artifact/version.txt
+
+#               echo "Created artifact:"
+#               ls -la artifact
+#               cat artifact/version.txt
+#             displayName: Create artifact
+
+#           # Publish artifact
+#           - publish: artifact
+#             artifact: application
+#             displayName: Publish application artifact
+
+#   # =========================
+#   # TEST
+#   # =========================
+#   - stage: Test
+#     displayName: Test
+#     dependsOn: Build
+
+#     jobs:
+#       - job: TestJob
+#         displayName: Run Tests
+
+#         steps:
+#           - checkout: self
+
+#           - task: UsePythonVersion@0
+#             inputs:
+#               versionSpec: '$(pythonVersion)'
+
+#           - script: |
+#               python --version
+#               python -m pip install --upgrade pip
+#               pip install -r requirements.txt
+#             displayName: Install test dependencies
+
+#           - script: |
+#               export PYTHONPATH="$(System.DefaultWorkingDirectory)"
+#               echo "PYTHONPATH=$PYTHONPATH"
+
+#               echo "Testing app import:"
+#               python -c "import app; print('app imported successfully')"
+
+#               echo "Running unit tests:"
+#               pytest -v tests/calculator.py
+#             displayName: Run unit tests
+
+#   # =========================
+#   # DEPLOY
+#   # =========================
+#   - stage: Deploy
+#     displayName: Deploy
+#     dependsOn: Test
+
+#     jobs:
+#       - job: DeployJob
+#         displayName: Deploy Application
+
+#         steps:
+#           # Download artifact produced by Build
+#           - download: current
+#             artifact: application
+
+#           - script: |
+#               echo "Downloaded artifact:"
+#               ls -la "$(Pipeline.Workspace)/application"
+
+#               echo "Artifact contents:"
+#               cat "$(Pipeline.Workspace)/application/version.txt"
+#             displayName: Read artifact
+
+
+
 trigger:
-  - main
+- main
 
 pool:
   vmImage: ubuntu-latest
@@ -9,103 +123,60 @@ variables:
 
 stages:
 
-  # =========================
-  # BUILD
-  # =========================
-  - stage: Build
-    displayName: Build
+# =========================
+# BUILD
+# =========================
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
 
-    jobs:
-      - job: BuildJob
-        displayName: Build Application
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
 
-        steps:
-          - checkout: self
+    - script: |
+        python --version
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        python -m compileall app
+      displayName: Build application
 
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '$(pythonVersion)'
 
-          - script: |
-              python --version
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            displayName: Install dependencies
+# =========================
+# TEST
+# =========================
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    steps:
 
-          - script: |
-              python -m compileall app
-            displayName: Compile application
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
 
-          # Create artifact
-          - script: |
-              mkdir -p artifact
-              echo "Hello from build $(Build.BuildNumber)" > artifact/version.txt
+    - script: |
+        pytest -v tests/calculator.py
+      displayName: Run tests
 
-              echo "Created artifact:"
-              ls -la artifact
-              cat artifact/version.txt
-            displayName: Create artifact
 
-          # Publish artifact
-          - publish: artifact
-            artifact: application
-            displayName: Publish application artifact
+# =========================
+# DEPLOY
+# =========================
+- stage: Deploy
+  dependsOn: Test
+  jobs:
+  - job: DeployJob
+    steps:
 
-  # =========================
-  # TEST
-  # =========================
-  - stage: Test
-    displayName: Test
-    dependsOn: Build
+    - script: |
+        mkdir -p deployed-app
+        cp app/calculator.py deployed-app/
+        echo "Deployment completed"
+      displayName: Deploy application
 
-    jobs:
-      - job: TestJob
-        displayName: Run Tests
-
-        steps:
-          - checkout: self
-
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '$(pythonVersion)'
-
-          - script: |
-              python --version
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            displayName: Install test dependencies
-
-          - script: |
-              export PYTHONPATH="$(System.DefaultWorkingDirectory)"
-              echo "PYTHONPATH=$PYTHONPATH"
-
-              echo "Testing app import:"
-              python -c "import app; print('app imported successfully')"
-
-              echo "Running unit tests:"
-              pytest -v tests/calculator.py
-            displayName: Run unit tests
-
-  # =========================
-  # DEPLOY
-  # =========================
-  - stage: Deploy
-    displayName: Deploy
-    dependsOn: Test
-
-    jobs:
-      - job: DeployJob
-        displayName: Deploy Application
-
-        steps:
-          # Download artifact produced by Build
-          - download: current
-            artifact: application
-
-          - script: |
-              echo "Downloaded artifact:"
-              ls -la "$(Pipeline.Workspace)/application"
-
-              echo "Artifact contents:"
-              cat "$(Pipeline.Workspace)/application/version.txt"
-            displayName: Read artifact
+    - script: |
+        echo "Running smoke test..."
+        python -c "from app.calculator import add; assert add(2,3) == 5"
+      displayName: Smoke test
