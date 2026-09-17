@@ -157,33 +157,29 @@ stages:
         versionSpec: '$(pythonVersion)'
 
     - script: |
-        echo "Current directory:"
-        pwd
-
-        echo "Directory contents:"
-        ls -la
-
-        echo "App directory:"
-        ls -la app
-
-        echo "Python:"
-        python --version
-
-        echo "Python import path:"
-        python -c "import sys; print('\n'.join(sys.path))"
-
-        echo "Testing app import:"
-        python -c "import app; print(app)"
-      displayName: Diagnose Python environment
-
-    - script: |
         python --version
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       displayName: Install test dependencies
 
     - script: |
-        pytest -v tests/calculator.py
+        echo "Current directory:"
+        pwd
+
+        echo "Repository contents:"
+        ls -la
+
+        echo "App directory:"
+        ls -la app
+
+        echo "Setting Python path..."
+        export PYTHONPATH="$(System.DefaultWorkingDirectory):$PYTHONPATH"
+
+        echo "Testing app import..."
+        python -c "from app.calculator import add; print('Import successful:', add(2,3))"
+
+        echo "Running tests..."
+        python -m pytest -v tests/calculator.py
       displayName: Run tests
 
 
