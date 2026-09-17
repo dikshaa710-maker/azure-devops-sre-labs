@@ -195,10 +195,15 @@ stages:
     - script: |
         mkdir -p deployed-app
         cp app/calculator.py deployed-app/
+
+        # Intentionally break deployed application
+        sed -i 's/return a + b/return a - b/' deployed-app/calculator.py
+
         echo "Deployment completed"
       displayName: Deploy application
 
     - script: |
         echo "Running smoke test..."
-        python -c "from app.calculator import add; assert add(2,3) == 5"
+        cd deployed-app
+        python -c "from calculator import add; assert add(2,3) == 5"
       displayName: Smoke test
