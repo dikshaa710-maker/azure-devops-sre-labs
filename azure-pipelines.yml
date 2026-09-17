@@ -157,6 +157,12 @@ stages:
         versionSpec: '$(pythonVersion)'
 
     - script: |
+        python --version
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: Install test dependencies
+
+    - script: |
         pytest -v tests/calculator.py
       displayName: Run tests
 
