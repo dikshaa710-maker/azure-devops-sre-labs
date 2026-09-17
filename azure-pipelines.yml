@@ -157,6 +157,26 @@ stages:
         versionSpec: '$(pythonVersion)'
 
     - script: |
+        echo "Current directory:"
+        pwd
+
+        echo "Directory contents:"
+        ls -la
+
+        echo "App directory:"
+        ls -la app
+
+        echo "Python:"
+        python --version
+
+        echo "Python import path:"
+        python -c "import sys; print('\n'.join(sys.path))"
+
+        echo "Testing app import:"
+        python -c "import app; print(app)"
+      displayName: Diagnose Python environment
+
+    - script: |
         python --version
         python -m pip install --upgrade pip
         pip install -r requirements.txt
